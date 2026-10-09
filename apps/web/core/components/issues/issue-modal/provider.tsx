@@ -11,7 +11,8 @@ import type { ISearchIssueResponse, TIssue } from "@plane/types";
 // components
 import { IssueModalContext } from "@/components/issues/issue-modal/context";
 // hooks
-import { useUser } from "@/hooks/store/user/user-user";
+import { useParams } from "next/navigation";
+import { useWorkItemCreateProjectIds } from "@/hooks/use-guest-work-item-access"; // custom: fork extension
 
 export type TIssueModalProviderProps = {
   templateId?: string;
@@ -25,9 +26,9 @@ export const IssueModalProvider = observer(function IssueModalProvider(props: TI
   // states
   const [selectedParentIssue, setSelectedParentIssue] = useState<ISearchIssueResponse | null>(null);
   // store hooks
-  const { projectsWithCreatePermissions } = useUser();
-  // derived values
-  const projectIdsWithCreatePermissions = Object.keys(projectsWithCreatePermissions ?? {});
+  const { workspaceSlug } = useParams();
+  // custom: guests (customers) may create work items too
+  const projectIdsWithCreatePermissions = useWorkItemCreateProjectIds(workspaceSlug?.toString());
 
   return (
     <IssueModalContext.Provider

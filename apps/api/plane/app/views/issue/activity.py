@@ -16,6 +16,7 @@ from rest_framework import status
 
 # Module imports
 from .. import BaseAPIView
+from plane.utils.worklog import hide_worklog_activity_for_guests  # custom: fork extension
 from plane.app.serializers import IssueActivitySerializer, IssueCommentSerializer
 from plane.app.permissions import ProjectEntityPermission, allow_permission, ROLE
 from plane.db.models import IssueActivity, IssueComment, CommentReaction, IntakeIssue
@@ -44,6 +45,8 @@ class IssueActivityEndpoint(BaseAPIView):
             .filter(**filters)
             .select_related("actor", "workspace", "issue", "project")
         ).order_by("created_at")
+        # custom: time tracking entries are internal and hidden from guests (customers)
+        issue_activities = hide_worklog_activity_for_guests(issue_activities, request.user)
         issue_comments = (
             IssueComment.objects.filter(issue_id=issue_id)
             .filter(

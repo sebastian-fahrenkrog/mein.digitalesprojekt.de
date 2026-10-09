@@ -16,6 +16,8 @@ import { useCommandPalette } from "@/hooks/store/use-command-palette";
 import { useProject } from "@/hooks/store/use-project";
 import { useUser } from "@/hooks/store/user";
 import { useInstance } from "@/hooks/store/use-instance";
+import { useParams } from "next/navigation";
+import { useWorkItemCreateProjectIds } from "@/hooks/use-guest-work-item-access"; // custom: fork extension
 
 export type TPowerKCreationCommandKeys =
   | "create_work_item"
@@ -33,7 +35,6 @@ export const usePowerKCreationCommandsRecord = (): Record<TPowerKCreationCommand
   // store
   const { config } = useInstance();
   const {
-    canPerformAnyCreateAction,
     permission: { allowPermissions },
   } = useUser();
   const { workspaceProjectIds, getPartialProjectById } = useProject();
@@ -46,7 +47,11 @@ export const usePowerKCreationCommandsRecord = (): Record<TPowerKCreationCommand
     toggleCreatePageModal,
   } = useCommandPalette();
   // derived values
-  const canCreateWorkItem = canPerformAnyCreateAction && workspaceProjectIds && workspaceProjectIds.length > 0;
+  // custom: guests (customers) may create work items too
+  const { workspaceSlug: routeWorkspaceSlug } = useParams();
+  const workItemCreateProjectIds = useWorkItemCreateProjectIds(routeWorkspaceSlug?.toString());
+  const canCreateWorkItem =
+    workItemCreateProjectIds.length > 0 && workspaceProjectIds && workspaceProjectIds.length > 0;
   const canCreateProject = allowPermissions(
     [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
     EUserPermissionsLevel.WORKSPACE

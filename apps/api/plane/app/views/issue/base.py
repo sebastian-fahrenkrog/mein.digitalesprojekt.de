@@ -32,6 +32,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 # Module imports
+from plane.utils.guest_work_items import restrict_guest_issue_payload  # custom: fork extension
 from plane.app.permissions import ROLE, allow_permission
 from plane.app.serializers import (
     IssueCreateSerializer,
@@ -401,8 +402,10 @@ class IssueViewSet(BaseViewSet):
                 on_results=lambda issues: issue_on_results(group_by=group_by, issues=issues, sub_group_by=sub_group_by),
             )
 
-    @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST])  # custom: guests (customers) may create
     def create(self, request, slug, project_id):
+        # custom: guests may only set content fields
+        restrict_guest_issue_payload(request, slug, project_id)
         project = Project.objects.get(pk=project_id)
 
         serializer = IssueCreateSerializer(
@@ -626,6 +629,8 @@ class IssueViewSet(BaseViewSet):
 
     @allow_permission(allowed_roles=[ROLE.ADMIN, ROLE.MEMBER], creator=True, model=Issue)
     def partial_update(self, request, slug, project_id, pk=None):
+        # custom: guests reach this only as creators and may only change content fields
+        restrict_guest_issue_payload(request, slug, project_id)
         queryset = self.get_queryset()
         queryset = self.apply_annotations(queryset)
 

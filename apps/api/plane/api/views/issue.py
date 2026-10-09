@@ -41,6 +41,7 @@ from drf_spectacular.utils import (
 )
 
 # Module imports
+from plane.utils.worklog import hide_worklog_activity_for_guests  # custom: fork extension
 from plane.api.serializers import (
     IssueAttachmentSerializer,
     IssueActivitySerializer,
@@ -1730,6 +1731,8 @@ class IssueActivityListAPIEndpoint(BaseAPIView):
             sanitize_order_by(request.GET.get("order_by", "created_at"), ACTIVITY_ORDER_BY_ALLOWLIST, "created_at")
         )
 
+        # custom: time tracking entries are internal and hidden from guests (customers)
+        issue_activities = hide_worklog_activity_for_guests(issue_activities, request.user)
         return self.paginate(
             request=request,
             queryset=(issue_activities),
@@ -1776,7 +1779,10 @@ class IssueActivityDetailAPIEndpoint(BaseAPIView):
         """
         issue_activity = (
             (
-                IssueActivity.objects.filter(issue_id=issue_id, workspace__slug=slug, project_id=project_id, id=pk)
+                hide_worklog_activity_for_guests(  # custom: worklogs are hidden from guests
+                    IssueActivity.objects.filter(issue_id=issue_id, workspace__slug=slug, project_id=project_id, id=pk),
+                    request.user,
+                )
                 .filter(
                     ~Q(field__in=["comment", "vote", "reaction", "draft"]),
                     project__project_projectmember__member=self.request.user,

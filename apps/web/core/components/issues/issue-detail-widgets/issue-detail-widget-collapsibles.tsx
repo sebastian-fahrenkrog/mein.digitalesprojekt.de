@@ -18,6 +18,7 @@ import { LinksCollapsible } from "./links";
 import { RelationsCollapsible } from "./relations";
 import { SubIssuesCollapsible } from "./sub-issues";
 import { WorkLogCollapsible } from "./worklog"; // custom: fork extension
+import { useWorkItemContentAccess } from "@/hooks/use-guest-work-item-access"; // custom: fork extension
 
 type Props = {
   workspaceSlug: string;
@@ -37,6 +38,8 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
     attachment: { getAttachmentsCountByIssueId, getAttachmentsUploadStatusByIssueId },
     relation: { getRelationCountByIssueId },
   } = useIssueDetail(issueServiceType);
+  // custom: time tracking is internal and hidden from guests (customers)
+  const { isStaff } = useWorkItemContentAccess(workspaceSlug, projectId);
   // derived values
   const issue = getIssueById(issueId);
   const subIssues = subIssuesByIssueId(issueId);
@@ -89,8 +92,8 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
           issueServiceType={issueServiceType}
         />
       )}
-      {/* custom: fork extension - time tracking (work items only, not epics) */}
-      {issueServiceType === EIssueServiceType.ISSUES && !hideWidgets?.includes("worklog") && (
+      {/* custom: fork extension - time tracking (work items only, not epics; never for guests/customers) */}
+      {issueServiceType === EIssueServiceType.ISSUES && isStaff && !hideWidgets?.includes("worklog") && (
         <WorkLogCollapsible
           workspaceSlug={workspaceSlug}
           projectId={projectId}

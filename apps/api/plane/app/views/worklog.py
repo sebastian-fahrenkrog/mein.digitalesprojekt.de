@@ -4,19 +4,23 @@
 
 # custom: fork extension - session-authenticated worklog endpoints for the web app.
 
-from plane.app.permissions import ProjectEntityPermission
-from plane.utils.worklog import ProjectWorkLogSummaryMixin, WorkLogDetailMixin, WorkLogListCreateMixin
+from plane.utils.worklog import (
+    ProjectStaffPermission,
+    ProjectWorkLogSummaryMixin,
+    WorkLogDetailMixin,
+    WorkLogListCreateMixin,
+)
 
 from .base import BaseAPIView
 
 
 class IssueWorkLogEndpoint(WorkLogListCreateMixin, BaseAPIView):
-    permission_classes = [ProjectEntityPermission]
+    permission_classes = [ProjectStaffPermission]
 
 
 class IssueWorkLogDetailEndpoint(WorkLogDetailMixin, BaseAPIView):
-    permission_classes = [ProjectEntityPermission]
+    permission_classes = [ProjectStaffPermission]
 
 
 class ProjectWorkLogSummaryEndpoint(ProjectWorkLogSummaryMixin, BaseAPIView):
-    permission_classes = [ProjectEntityPermission]
+    permission_classes = [ProjectStaffPermission]

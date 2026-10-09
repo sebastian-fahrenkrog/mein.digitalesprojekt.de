@@ -28,6 +28,7 @@ export const ProjectEmptyState = observer(function ProjectEmptyState() {
   // derived values
   const projectWorkItemFilter = useWorkItemFilterInstance(EIssuesStoreType.PROJECT, projectId);
 
+  const canGuestCreate = allowPermissions([EUserProjectRoles.GUEST], EUserPermissionsLevel.PROJECT); // custom
   const canPerformEmptyStateActions = allowPermissions(
     [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
     EUserPermissionsLevel.PROJECT
@@ -60,7 +61,8 @@ export const ProjectEmptyState = observer(function ProjectEmptyState() {
               onClick: () => {
                 toggleCreateIssueModal(true, EIssuesStoreType.PROJECT);
               },
-              disabled: !canPerformEmptyStateActions,
+              // custom: guests (customers) may create work items too
+              disabled: !canPerformEmptyStateActions && !canGuestCreate,
               variant: "primary",
             },
           ]}

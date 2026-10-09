@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
-import type { TNameDescriptionLoader } from "@plane/types";
+import type { TNameDescriptionLoader, TWorkItemWidgets } from "@plane/types";
 import { EFileAssetType, EIssueServiceType } from "@plane/types";
 // components
 import { DescriptionVersionsRoot } from "@/components/core/description-versions";
@@ -17,6 +17,7 @@ import { DescriptionInput } from "@/components/editor/rich-text/description-inpu
 import { IssueTypeSwitcher } from "@/components/issues/issue-type-switcher";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useWorkItemContentAccess } from "@/hooks/use-guest-work-item-access"; // custom: fork extension
 import { useMember } from "@/hooks/store/use-member";
 import { useUser } from "@/hooks/store/user";
 import useReloadConfirmations from "@/hooks/use-reload-confirmation";
@@ -35,6 +36,9 @@ import type { TIssueOperations } from "./root";
 // services init
 const workItemVersionService = new WorkItemVersionService();
 
+// custom: fork extension
+const GUEST_HIDDEN_WIDGETS: TWorkItemWidgets[] = ["sub-work-items", "relations"];
+
 type Props = {
   workspaceSlug: string;
   projectId: string;
@@ -45,7 +49,7 @@ type Props = {
 };
 
 export const IssueMainContent = observer(function IssueMainContent(props: Props) {
-  const { workspaceSlug, projectId, issueId, issueOperations, isEditable, isArchived } = props;
+  const { workspaceSlug, projectId, issueId, issueOperations, isEditable: canEditAsMember, isArchived } = props;
   // refs
   const editorRef = useRef<EditorRefApi>(null);
   // states
@@ -61,6 +65,10 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
   const { setShowAlert } = useReloadConfirmations(isSubmitting === "submitting");
   // derived values
   const issue = issueId ? getIssueById(issueId) : undefined;
+  // custom: guests (customers) edit title, description, links and attachments of their own work
+  // items; planning properties, sub-items and relations stay with the team
+  const { isStaff, isGuest, canEditContent } = useWorkItemContentAccess(workspaceSlug, projectId, issue?.created_by);
+  const isEditable = canEditAsMember || canEditContent;
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
@@ -167,6 +175,7 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
         projectId={projectId}
         issueId={issueId}
         disabled={!isEditable || isArchived}
+        hideWidgets={isGuest ? GUEST_HIDDEN_WIDGETS : undefined}
         renderWidgetModals={!isPeekModeActive}
         issueServiceType={EIssueServiceType.ISSUES}
       />
@@ -177,7 +186,7 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
           projectId={projectId}
           issueId={issueId}
           issueOperations={issueOperations}
-          disabled={!isEditable || isArchived}
+          disabled={!isStaff || isArchived}
         />
       )}
 

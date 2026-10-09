@@ -4,16 +4,45 @@
 
 # custom: fork extension - shared worklog logic for the public API and the web app endpoints.
 
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
 from plane.api.serializers.worklog import WorkLogSerializer
-from plane.db.models import Issue, IssueActivity, IssueWorkLog
+from plane.db.models import Issue, IssueActivity, IssueWorkLog, ProjectMember
 
 ACTIVITY_FIELD = "worklog"
+# Time tracking is internal: only project admins (20) and members (15) see it, never guests (5),
+# who are the role used for customers.
+STAFF_ROLES = (20, 15)
+
+
+def staff_project_ids(user):
+    """Projects in which `user` counts as staff (admin or member)."""
+    return ProjectMember.objects.filter(member=user, is_active=True, role__in=STAFF_ROLES).values("project_id")
+
+
+def hide_worklog_activity_for_guests(queryset, user):
+    """Drop worklog activity entries from projects where `user` is not staff."""
+    return queryset.filter(~Q(field=ACTIVITY_FIELD) | Q(project_id__in=staff_project_ids(user)))
+
+
+class ProjectStaffPermission(BasePermission):
+    """Allow any method only for active admins and members of the project in the URL."""
+
+    def has_permission(self, request, view):
+        if request.user.is_anonymous:
+            return False
+        return ProjectMember.objects.filter(
+            workspace__slug=view.kwargs.get("slug"),
+            project_id=view.kwargs.get("project_id"),
+            member=request.user,
+            is_active=True,
+            role__in=STAFF_ROLES,
+        ).exists()
 
 
 def format_minutes(minutes):

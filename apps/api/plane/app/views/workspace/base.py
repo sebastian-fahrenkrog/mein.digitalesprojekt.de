@@ -25,6 +25,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 
+from plane.utils.worklog import hide_worklog_activity_for_guests  # custom: fork extension
 from plane.app.permissions import (
     WorkSpaceAdminPermission,
     WorkSpaceBasePermission,
@@ -387,7 +388,9 @@ class ExportWorkspaceUserActivityEndpoint(BaseAPIView):
             project__project_projectmember__member=request.user,
             project__project_projectmember__is_active=True,
             actor_id=user_id,
-        ).select_related("actor", "workspace", "issue", "project")[:10000]
+        ).select_related("actor", "workspace", "issue", "project")
+        # custom: time tracking entries are internal and hidden from guests (customers)
+        user_activities = hide_worklog_activity_for_guests(user_activities, request.user)[:10000]
 
         header = [
             "Actor name",

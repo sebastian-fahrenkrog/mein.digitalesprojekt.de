@@ -9,11 +9,12 @@ import { observer } from "mobx-react";
 import { createPortal } from "react-dom";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
-import type { TNameDescriptionLoader } from "@plane/types";
+import type { TNameDescriptionLoader, TWorkItemWidgets } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 import { cn } from "@plane/utils";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useWorkItemContentAccess } from "@/hooks/use-guest-work-item-access"; // custom: fork extension
 import useKeypress from "@/hooks/use-keypress";
 import usePeekOverviewOutsideClickDetector from "@/hooks/use-peek-overview-outside-click";
 // local imports
@@ -71,6 +72,11 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
   } = useIssueDetail();
   const { isAnyModalOpen: isAnyEpicModalOpen } = useIssueDetail(EIssueServiceType.EPICS);
   const issue = getIssueById(issueId);
+  // custom: guests (customers) may edit title, description, links and attachments of their own
+  // work items; properties, sub-items and relations stay with the team
+  const { isStaff, isGuest, canEditContent } = useWorkItemContentAccess(workspaceSlug, projectId, issue?.created_by);
+  const contentDisabled = isStaff ? disabled : !canEditContent;
+  const hiddenWidgets: TWorkItemWidgets[] | undefined = isGuest ? ["sub-work-items", "relations"] : undefined;
   // remove peek id
   const removeRoutePeekId = () => {
     setPeekIssue(undefined);
@@ -181,7 +187,7 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                       projectId={projectId}
                       issueId={issueId}
                       issueOperations={issueOperations}
-                      disabled={disabled}
+                      disabled={contentDisabled}
                       isArchived={is_archived}
                       isSubmitting={isSubmitting}
                       setIsSubmitting={(value) => setIsSubmitting(value)}
@@ -192,7 +198,8 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                         workspaceSlug={workspaceSlug}
                         projectId={projectId}
                         issueId={issueId}
-                        disabled={disabled || is_archived}
+                        disabled={contentDisabled || is_archived}
+                        hideWidgets={hiddenWidgets}
                         issueServiceType={EIssueServiceType.ISSUES}
                       />
                     </div>
@@ -222,7 +229,7 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                           projectId={projectId}
                           issueId={issueId}
                           issueOperations={issueOperations}
-                          disabled={disabled}
+                          disabled={contentDisabled}
                           isArchived={is_archived}
                           isSubmitting={isSubmitting}
                           setIsSubmitting={(value) => setIsSubmitting(value)}
@@ -233,7 +240,8 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                             workspaceSlug={workspaceSlug}
                             projectId={projectId}
                             issueId={issueId}
-                            disabled={disabled}
+                            disabled={contentDisabled}
+                            hideWidgets={hiddenWidgets}
                             issueServiceType={EIssueServiceType.ISSUES}
                           />
                         </div>

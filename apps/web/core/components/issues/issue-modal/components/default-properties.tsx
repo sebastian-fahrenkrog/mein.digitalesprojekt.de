@@ -30,6 +30,7 @@ import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifi
 // hooks
 import { useProjectEstimates } from "@/hooks/store/estimates";
 import { useProject } from "@/hooks/store/use-project";
+import { useWorkItemContentAccess } from "@/hooks/use-guest-work-item-access"; // custom: fork extension
 import { useUserPermissions } from "@/hooks/store/user";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
@@ -69,6 +70,7 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
   const { getProjectById } = useProject();
   const { isMobile } = usePlatformOS();
   const { allowPermissions } = useUserPermissions();
+  const { isGuest } = useWorkItemContentAccess(workspaceSlug, projectId ?? undefined); // custom: fork extension
   // derived values
   const projectDetails = getProjectById(projectId);
 
@@ -82,6 +84,28 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
 
   const maxDate = getDate(targetDate);
   maxDate?.setDate(maxDate.getDate());
+
+  // custom: guests (customers) only set the priority; planning fields stay with the team
+  const priorityField = (
+    <Controller
+      control={control}
+      name="priority"
+      render={({ field: { value, onChange } }) => (
+        <div className="h-7">
+          <PriorityDropdown
+            value={value}
+            onChange={(priority) => {
+              onChange(priority);
+              handleFormChange();
+            }}
+            buttonVariant="border-with-text"
+            tabIndex={getIndex("priority")}
+          />
+        </div>
+      )}
+    />
+  );
+  if (isGuest) return <div className="flex flex-wrap items-center gap-2">{priorityField}</div>;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -104,23 +128,7 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
           </div>
         )}
       />
-      <Controller
-        control={control}
-        name="priority"
-        render={({ field: { value, onChange } }) => (
-          <div className="h-7">
-            <PriorityDropdown
-              value={value}
-              onChange={(priority) => {
-                onChange(priority);
-                handleFormChange();
-              }}
-              buttonVariant="border-with-text"
-              tabIndex={getIndex("priority")}
-            />
-          </div>
-        )}
-      />
+      {priorityField}
       <Controller
         control={control}
         name="assignee_ids"

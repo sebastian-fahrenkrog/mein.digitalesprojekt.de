@@ -29,6 +29,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 
+from plane.utils.worklog import hide_worklog_activity_for_guests  # custom: fork extension
 from plane.app.permissions import WorkspaceEntityPermission, WorkspaceViewerPermission
 
 # Module imports
@@ -386,6 +387,8 @@ class WorkspaceUserActivityEndpoint(BaseAPIView):
             project__archived_at__isnull=True,
             actor=user_id,
         ).select_related("actor", "workspace", "issue", "project")
+        # custom: time tracking entries are internal and hidden from guests (customers)
+        queryset = hide_worklog_activity_for_guests(queryset, request.user)
 
         if projects:
             queryset = queryset.filter(project__in=projects)
