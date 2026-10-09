@@ -31,6 +31,7 @@ export const NAMESPACES = [
   "work-item",
   "work-item-type",
   "workflow",
+  "worklog", // custom: fork extension
   "workspace",
   "workspace-settings",
 ] as const;

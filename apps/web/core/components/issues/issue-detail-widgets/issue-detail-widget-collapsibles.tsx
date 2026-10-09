@@ -7,6 +7,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 // plane imports
+import { EIssueServiceType } from "@plane/types";
 import type { TIssueServiceType, TWorkItemWidgets } from "@plane/types";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
@@ -16,6 +17,7 @@ import { AttachmentsCollapsible } from "./attachments";
 import { LinksCollapsible } from "./links";
 import { RelationsCollapsible } from "./relations";
 import { SubIssuesCollapsible } from "./sub-issues";
+import { WorkLogCollapsible } from "./worklog"; // custom: fork extension
 
 type Props = {
   workspaceSlug: string;
@@ -80,6 +82,16 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
       )}
       {shouldRenderAttachments && (
         <AttachmentsCollapsible
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          disabled={disabled}
+          issueServiceType={issueServiceType}
+        />
+      )}
+      {/* custom: fork extension - time tracking (work items only, not epics) */}
+      {issueServiceType === EIssueServiceType.ISSUES && !hideWidgets?.includes("worklog") && (
+        <WorkLogCollapsible
           workspaceSlug={workspaceSlug}
           projectId={projectId}
           issueId={issueId}

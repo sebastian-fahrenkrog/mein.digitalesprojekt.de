@@ -30,6 +30,7 @@ import {
   IssueAttachmentActivity,
   IssueArchivedAtActivity,
   IssueInboxActivity,
+  IssueWorkLogActivity, // custom: fork extension
 } from "./actions";
 
 type TIssueActivityItem = {
@@ -91,6 +92,8 @@ export const IssueActivityItem = observer(function IssueActivityItem(props: TIss
     case "intake":
     case "inbox":
       return <IssueInboxActivity {...componentDefaultProps} />;
+    case "worklog": // custom: fork extension
+      return <IssueWorkLogActivity {...componentDefaultProps} />;
     default:
       return null;
   }

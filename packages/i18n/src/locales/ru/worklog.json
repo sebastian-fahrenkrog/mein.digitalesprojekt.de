@@ -1,0 +1,30 @@
+{
+  "worklog": {
+    "title": "Time tracking",
+    "total": "Total",
+    "add": "Log time",
+    "duration": "Duration",
+    "duration_placeholder": "e.g. 1:30, 1.5 or 90m",
+    "date": "Date",
+    "user": "Person",
+    "description": "Note",
+    "description_placeholder": "What was done?",
+    "empty": "No time logged yet.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "invalid_duration": "Enter a duration such as 1:30, 1.5 or 90m.",
+    "toasts": {
+      "created": "Time logged.",
+      "updated": "Time entry updated.",
+      "deleted": "Time entry deleted.",
+      "error": "The time entry could not be saved."
+    },
+    "activity": {
+      "created": "logged {duration}",
+      "updated": "changed a time entry from {old} to {new}",
+      "deleted": "deleted a time entry of {duration}"
+    }
+  }
+}

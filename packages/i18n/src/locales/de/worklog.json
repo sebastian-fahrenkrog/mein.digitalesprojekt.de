@@ -1,0 +1,30 @@
+{
+  "worklog": {
+    "title": "Zeiterfassung",
+    "total": "Gesamt",
+    "add": "Zeit buchen",
+    "duration": "Dauer",
+    "duration_placeholder": "z. B. 1:30, 1,5 oder 90m",
+    "date": "Datum",
+    "user": "Person",
+    "description": "Notiz",
+    "description_placeholder": "Was wurde gemacht?",
+    "empty": "Noch keine Zeit gebucht.",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "invalid_duration": "Bitte eine Dauer wie 1:30, 1,5 oder 90m eingeben.",
+    "toasts": {
+      "created": "Zeit gebucht.",
+      "updated": "Zeiteintrag geändert.",
+      "deleted": "Zeiteintrag gelöscht.",
+      "error": "Der Zeiteintrag konnte nicht gespeichert werden."
+    },
+    "activity": {
+      "created": "hat {duration} gebucht",
+      "updated": "hat einen Zeiteintrag von {old} auf {new} geändert",
+      "deleted": "hat einen Zeiteintrag über {duration} gelöscht"
+    }
+  }
+}
