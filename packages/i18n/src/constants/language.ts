@@ -8,6 +8,10 @@ import type { TLanguage, ILanguageOption } from "../types";
 
 export const FALLBACK_LANGUAGE: TLanguage = "en";
 
+// custom: UI language for visitors without a stored preference and for new users.
+// FALLBACK_LANGUAGE stays "en" so missing keys still resolve to English text.
+export const DEFAULT_LANGUAGE: TLanguage = "de";
+
 export const SUPPORTED_LANGUAGES: ILanguageOption[] = [
   { label: "English", value: "en" },
   { label: "Français", value: "fr" },
