@@ -62,7 +62,7 @@ export class Server {
     // Logging middleware
     this.app.use(loggerMiddleware);
     // Body parsing middleware
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: "10mb" })); // custom: page content sync sends full HTML documents
     this.app.use(express.urlencoded({ extended: true }));
     // cors middleware
     this.setupCors();
